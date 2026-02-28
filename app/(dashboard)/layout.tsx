@@ -3,7 +3,6 @@ import { Navbar } from '@/components/layout/Navbar';
 import { getSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 
-// THE FIX: Forces Vercel to NEVER cache this layout, stopping the invisible redirect loop
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardLayout({
@@ -18,7 +17,8 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-900">
+    // THE FIX: suppressHydrationWarning stops React from panicking when browser extensions alter the DOM
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-900" suppressHydrationWarning>
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden pl-64">
         <Navbar user={session} />

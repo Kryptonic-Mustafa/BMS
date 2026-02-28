@@ -1,3 +1,8 @@
+import os
+
+files = {
+    # 1. FIX THE 500 ERROR: Change POST to PUT to match your frontend request
+    "app/api/admin/settings/route.ts": """
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { getSession } from '@/lib/session';
@@ -64,3 +69,83 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 });
   }
 }
+""",
+
+    # 2. FIX THE 404 ERROR: Dynamically generates a beautiful 'B' Favicon for Babji Bank
+    "app/icon.tsx": """
+import { ImageResponse } from 'next/og';
+
+export const runtime = 'edge';
+export const size = { width: 32, height: 32 };
+export const contentType = 'image/png';
+
+export default function Icon() {
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          fontSize: 24,
+          background: '#2563EB',
+          color: 'white',
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '8px',
+          fontWeight: 'bold'
+        }}
+      >
+        B
+      </div>
+    ),
+    { ...size }
+  );
+}
+""",
+
+    # 3. FIX THE HYDRATION ERROR: Suppresses warnings caused by browser extensions like LastPass
+    "app/(dashboard)/layout.tsx": """
+import Sidebar from '@/components/layout/Sidebar';
+import { Navbar } from '@/components/layout/Navbar';
+import { getSession } from '@/lib/session';
+import { redirect } from 'next/navigation';
+
+export const dynamic = 'force-dynamic';
+
+export default async function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await getSession();
+
+  if (!session) {
+    redirect('/login');
+  }
+
+  return (
+    // THE FIX: suppressHydrationWarning stops React from panicking when browser extensions alter the DOM
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-900" suppressHydrationWarning>
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden pl-64">
+        <Navbar user={session} />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 dark:bg-slate-900 p-8">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
+"""
+}
+
+def apply_clean_console():
+    for path, content in files.items():
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content.strip())
+    print("✅ API Method fixed to PUT, Favicon generated, and Hydration Warnings suppressed!")
+
+if __name__ == "__main__":
+    apply_clean_console()
