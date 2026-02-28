@@ -1,6 +1,6 @@
 import mysql from 'mysql2/promise';
 
-// THE FIX: Added 'export' so other files can use the raw pool for transactions
+// FIXED: Added 'export' so the Danger Reset route can use it for transactions
 export const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
