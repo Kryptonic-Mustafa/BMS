@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import bcrypt from 'bcryptjs';
-import { encrypt } from '@/lib/session';
+import { encrypt } from '@/lib/auth';
 import { cookies } from 'next/headers';
 
 export async function POST(request: Request) {
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
 
-    // THE FIX: Authoritative Role Check from Database
+    // Authoritative Role Check from Database
     const isStaff = user.role_id === 1 || user.role_id === 2 || user.is_super_admin === 1 || user.role === 'admin';
     const roleName = isStaff ? (user.role_id === 1 ? 'SuperAdmin' : 'Manager') : 'Customer';
     const targetRoute = isStaff ? '/admin' : '/customer';
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
             `, [user.role_id]);
             permissionNames = perms.map((p: any) => p.name);
         } catch (e) {
-            console.warn("Permissions fetch failed, defaulting to empty.");
+            console.warn("Permissions fetch failed.");
         }
     }
 
