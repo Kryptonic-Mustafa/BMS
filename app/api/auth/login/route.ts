@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import bcrypt from 'bcryptjs';
-import { encrypt } from '@/lib/auth';
+import { encrypt } from '@/lib/session'; // FIXED THIS IMPORT PATH
 import { cookies } from 'next/headers';
 
 export async function POST(request: Request) {
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     const token = await encrypt(sessionData);
     
     cookieStore.set('session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 86400, path: '/' });
-    cookieStore.set('client_policy', JSON.stringify({ role: roleName, permissions: permissionNames }), { httpOnly: false, secure: false, maxAge: 86400, path: '/' });
+    cookieStore.set('client_policy', JSON.stringify({ role: roleName, permissions: permissionNames }), { http0nly: false, secure: false, maxAge: 86400, path: '/' });
 
     console.log(`[LOGIN DEBUG] Success! Sending redirect to: ${targetRoute}`);
     return NextResponse.json({ message: 'Login successful', user: sessionData, redirectUrl: targetRoute });
