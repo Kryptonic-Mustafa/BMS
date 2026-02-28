@@ -6,23 +6,15 @@ export const pool = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: parseInt(process.env.DB_PORT || '4000'),
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  ssl: {
-    minVersion: 'TLSv1.2',
-    rejectUnauthorized: true
-  }
+  ssl: { minVersion: 'TLSv1.2', rejectUnauthorized: true }
 });
 
 export async function query(sql: string, params: any[] = []) {
   try {
-    console.log(`[DB DEBUG] Running: ${sql.substring(0, 60)}...`);
-    // THE FIX: Using pool.query() to bypass TiDB Serverless prepared statement quirks
     const [results] = await pool.query(sql, params);
     return results;
   } catch (error) {
-    console.error('[DB ERROR]', error);
+    console.error('Database query failed:', error);
     throw error;
   }
 }

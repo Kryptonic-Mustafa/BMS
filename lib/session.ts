@@ -1,32 +1,28 @@
+import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
-import { decrypt } from '@/lib/auth';
-import { query } from '@/lib/db';
+
+const secretKey = process.env.JWT_SECRET || "bms_super_secret_key_2026";
+const key = new TextEncoder().encode(secretKey);
+
+export async function encrypt(payload: any) {
+  return await new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('24h')
+    .sign(key);
+}
+
+export async function decrypt(input: string): Promise<any> {
+  try {
+    const { payload } = await jwtVerify(input, key, { algorithms: ['HS256'] });
+    return payload;
+  } catch (error) {
+    return null;
+  }
+}
 
 export async function getSession() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get('session')?.value;
-  if (!session) return null;
-  
-  const payload: any = await decrypt(session);
-  if(!payload) return null;
-
-  try {
-    // Fetch fresh permissions from DB
-    // We check if role_id exists to handle migration, otherwise fallback
-    if (payload.role_id) {
-        const perms: any = await query(`
-            SELECT p.name 
-            FROM permissions p
-            JOIN role_permissions rp ON p.id = rp.permission_id
-            WHERE rp.role_id = ?
-        `, [payload.role_id]);
-
-        const permissionList = perms.map((p: any) => p.name);
-        return { ...payload, permissions: permissionList };
-    }
-    return payload; 
-  } catch (e) {
-    // Fallback if DB fails or during strict edge cases
-    return payload;
-  }
+  const sessionCookie = (await cookies()).get('session')?.value;
+  if (!sessionCookie) return null;
+  return await decrypt(sessionCookie);
 }
