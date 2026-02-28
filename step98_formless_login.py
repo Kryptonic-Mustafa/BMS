@@ -1,3 +1,7 @@
+import os
+
+files = {
+    "app/(auth)/login/page.tsx": """
 'use client';
 import { useState } from 'react';
 import { Landmark } from 'lucide-react';
@@ -102,3 +106,15 @@ export default function Login() {
     </div>
   );
 }
+"""
+}
+
+def apply_formless_login():
+    for path, content in files.items():
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content.strip())
+    print("✅ Form replaced with div. The page physically cannot reload on its own anymore!")
+
+if __name__ == "__main__":
+    apply_formless_login()
