@@ -1,3 +1,7 @@
+import os
+
+files = {
+    "app/api/customer/otp/route.ts": """
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { getSession } from '@/lib/session';
@@ -31,3 +35,15 @@ export async function POST(request: Request) {
   
   return NextResponse.json({ error: 'Invalid action' });
 }
+"""
+}
+
+def fix_otp_api():
+    for path, content in files.items():
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content.strip())
+    print("✅ Fixed OTP API to handle 5-minute Expiry dynamically!")
+
+if __name__ == "__main__":
+    fix_otp_api()
