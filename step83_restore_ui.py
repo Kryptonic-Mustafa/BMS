@@ -1,3 +1,96 @@
+import os
+
+files = {
+    # 1. THE MISSING FILE: Creating lib/auth-client.ts to fix the Vercel Build Error
+    "lib/auth-client.ts": """
+import Cookies from 'js-cookie';
+
+export function getClientPolicy() {
+    const policy = Cookies.get('client_policy');
+    if (policy) {
+        try {
+            return JSON.parse(policy);
+        } catch (e) {
+            return { role: 'Guest', permissions: [] };
+        }
+    }
+    return { role: 'Guest', permissions: [] };
+}
+""",
+
+    # 2. FIXED SIDEBAR: Ensuring correct imports and paths
+    "components/layout/Sidebar.tsx": """
+'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { 
+  LayoutDashboard, Users, CreditCard, PieChart, 
+  Settings, ShieldCheck, LogOut, Landmark, History, Send, Wallet, Headset
+} from 'lucide-react';
+import { getClientPolicy } from '@/lib/auth-client';
+
+export default function Sidebar() {
+  const pathname = usePathname();
+  const policy = getClientPolicy();
+  const isAdmin = policy.role === 'Admin' || policy.role === 'SuperAdmin';
+
+  const menuItems = isAdmin ? [
+    { name: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
+    { name: 'Analytics', icon: PieChart, path: '/admin/analytics' },
+    { name: 'Customers', icon: Users, path: '/admin/customers' },
+    { name: 'Accounts', icon: CreditCard, path: '/admin/accounts' },
+    { name: 'Loans', icon: Landmark, path: '/admin/loans' },
+    { name: 'KYC', icon: ShieldCheck, path: '/admin/kyc' },
+    { name: 'Support', icon: Headset, path: '/admin/support' },
+    { name: 'Master Settings', icon: Settings, path: '/admin/settings' },
+  ] : [
+    { name: 'Dashboard', icon: LayoutDashboard, path: '/customer' },
+    { name: 'Transfer', icon: Send, path: '/customer/transfer' },
+    { name: 'History', icon: History, path: '/customer/history' },
+    { name: 'Utilities', icon: Wallet, path: '/customer/utilities' },
+    { name: 'KYC', icon: ShieldCheck, path: '/customer/kyc' },
+    { name: 'Support', icon: Headset, path: '/customer/support' },
+  ];
+
+  return (
+    <div className="w-64 bg-slate-900 text-white flex flex-col h-screen fixed left-0 top-0 border-r border-slate-800">
+      <div className="p-6">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <Landmark className="text-blue-500" /> Babji Bank
+        </h1>
+      </div>
+      
+      <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
+        {menuItems.map((item) => (
+          <Link 
+            key={item.name} 
+            href={item.path}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              pathname === item.path ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 text-slate-400'
+            }`}
+          >
+            <item.icon size={20} />
+            <span className="font-medium">{item.name}</span>
+          </Link>
+        ))}
+      </nav>
+
+      <div className="p-4 border-t border-slate-800">
+        <button 
+          onClick={() => window.location.href = '/api/auth/logout'}
+          className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-lg w-full transition-colors"
+        >
+          <LogOut size={20} />
+          <span className="font-medium">Sign Out</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+""",
+
+    # 3. FIXED RECENT ACTIVITY: Ensuring viewpoint and data matches local
+    "app/(dashboard)/customer/page.tsx": """
 'use client';
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
@@ -85,3 +178,15 @@ export default function CustomerDashboard() {
     </div>
   );
 }
+"""
+}
+
+def apply_restore():
+    for path, content in files.items():
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content.strip())
+    print("✅ Build fixed and UI Viewpoints restored!")
+
+if __name__ == "__main__":
+    apply_restore()

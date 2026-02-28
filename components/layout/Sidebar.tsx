@@ -3,8 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, Users, CreditCard, PieChart, 
-  Settings, ShieldCheck, LogOut, Landmark, FileText, 
-  History, Send, Wallet, Headset, Mail
+  Settings, ShieldCheck, LogOut, Landmark, History, Send, Wallet, Headset
 } from 'lucide-react';
 import { getClientPolicy } from '@/lib/auth-client';
 
