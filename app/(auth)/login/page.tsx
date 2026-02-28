@@ -15,6 +15,7 @@ export default function Login() {
     setLoading(true);
 
     try {
+      console.log(`[FRONTEND] Sending login request for ${email}`);
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -22,6 +23,7 @@ export default function Login() {
       });
 
       const data = await res.json();
+      console.log('[FRONTEND] Login response:', data);
 
       if (!res.ok) {
         setError(data.error || 'Login failed');
@@ -29,10 +31,11 @@ export default function Login() {
         return;
       }
 
-      // Ignore the frontend toggle and obey the database URL
+      console.log(`[FRONTEND] Redirecting to: ${data.redirectUrl}`);
       window.location.href = data.redirectUrl || '/customer';
       
     } catch (err) {
+      console.error('[FRONTEND] Connection error:', err);
       setError('Connection error');
       setLoading(false);
     }

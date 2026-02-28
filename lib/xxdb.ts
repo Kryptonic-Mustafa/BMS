@@ -1,5 +1,6 @@
 import mysql from 'mysql2/promise';
 
+// FIXED: Added 'export' so the Danger Reset route can use it for transactions
 export const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -15,14 +16,7 @@ export const pool = mysql.createPool({
   }
 });
 
-export async function query(sql: string, params: any[] = []) {
-  try {
-    console.log(`[DB DEBUG] Running: ${sql.substring(0, 60)}...`);
-    // THE FIX: Using pool.query() to bypass TiDB Serverless prepared statement quirks
-    const [results] = await pool.query(sql, params);
-    return results;
-  } catch (error) {
-    console.error('[DB ERROR]', error);
-    throw error;
-  }
+export async function query(sql: string, values: any[] = []) {
+  const [results] = await pool.execute(sql, values);
+  return results;
 }
