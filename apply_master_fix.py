@@ -1,3 +1,34 @@
+import os
+
+files = {
+    # FIX 1: Ensure the Dashboard fetches real recent activity from the DB
+    "app/api/customer/dashboard/route.ts": """
+import { NextResponse } from 'next/server';
+import { query } from '@/lib/db';
+import { getSession } from '@/lib/session';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  try {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const recentActivity = await query(
+      'SELECT * FROM transactions WHERE account_id = (SELECT id FROM accounts WHERE user_id = ?) ORDER BY created_at DESC LIMIT 5',
+      [session.id]
+    );
+
+    return NextResponse.json({ recentActivity });
+  } catch (error) {
+    console.error("Dashboard Fetch Error:", error);
+    return NextResponse.json({ recentActivity: [] });
+  }
+}
+""",
+
+    # FIX 2: Force Sidebar to use absolute paths to prevent redirection issues
+    "components/layout/Sidebar.tsx": """
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -66,3 +97,47 @@ export default function Sidebar() {
     </div>
   );
 }
+""",
+
+    # FIX 3: Global CSS Force (Prevents White-on-White text issues)
+    "app/globals.css": """
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #2563eb;
+  --background: #ffffff;
+  --foreground: #0f172a;
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Force specific dashboard text visibility */
+.text-dashboard-heading {
+  color: #1e293b !important;
+}
+
+.dark .text-dashboard-heading {
+  color: #f8fafc !important;
+}
+"""
+}
+
+def apply_master_fix():
+    for path, content in files.items():
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content.strip())
+    print("✅ Applied Master Fix: Sidebar, Activity Table, and Color Contrast restored!")
+
+if __name__ == "__main__":
+    apply_master_fix()

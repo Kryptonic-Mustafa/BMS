@@ -2,51 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply bg-background text-neutral antialiased;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-bold tracking-tight text-slate-900 dark:text-white;
-  }
+:root {
+  --primary: #2563eb;
+  --background: #ffffff;
+  --foreground: #0f172a;
 }
 
-@layer components {
-  .btn-primary {
-    @apply bg-primary text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-200 shadow-sm font-medium;
-  }
-  .card {
-    @apply bg-white dark:bg-slate-900 rounded-xl shadow-soft border border-slate-100 dark:border-slate-800 p-6;
-  }
-  .input-field {
-    @apply w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white dark:bg-slate-800 dark:text-white;
-  }
+.dark {
+  --background: #0f172a;
+  --foreground: #f8fafc;
 }
 
-/* --- CUSTOM SCROLLBARS --- */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+body {
+  background: var(--background);
+  color: var(--foreground);
 }
 
-::-webkit-scrollbar-track {
-  background: transparent; 
+/* Force specific dashboard text visibility */
+.text-dashboard-heading {
+  color: #1e293b !important;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1; /* slate-300 */
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8; /* slate-400 */
-}
-
-/* Dark Mode Scrollbar */
-.dark ::-webkit-scrollbar-thumb {
-  background: #475569; /* slate-600 */
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #64748b; /* slate-500 */
+.dark .text-dashboard-heading {
+  color: #f8fafc !important;
 }
