@@ -1,3 +1,7 @@
+import os
+
+files = {
+    "app/(dashboard)/admin/settings/page.tsx": """
 'use client';
 import { useState, useEffect } from 'react';
 // THE FIX: Added Settings and Users to the import list
@@ -172,3 +176,15 @@ export default function MasterSettings() {
     </div>
   );
 }
+"""
+}
+
+def fix_imports():
+    for path, content in files.items():
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content.strip())
+    print("✅ Fixed lucide-react icon imports!")
+
+if __name__ == "__main__":
+    fix_imports()
