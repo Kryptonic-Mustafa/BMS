@@ -3,15 +3,15 @@ import { Navbar } from '@/components/layout/Navbar';
 import { getSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 
+// THE FIX: Forces Vercel to NEVER cache this layout, stopping the invisible redirect loop
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const session = await getSession();
-  
-  // THE FIX: Log what the server sees to the Vercel Console
-  console.log("[LAYOUT BOUNCER] Session Check:", session ? `Valid User: ${session.email}` : "NULL - Redirecting to /login");
 
   if (!session) {
     redirect('/login');

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { encrypt } from '@/lib/session';
+import { cookies } from 'next/headers';
 
 export async function POST(request: Request) {
   try {
@@ -18,35 +19,27 @@ export async function POST(request: Request) {
     const roleName = isStaff ? (user.role_id === 1 ? 'SuperAdmin' : 'Manager') : 'Customer';
     const targetRoute = isStaff ? '/admin' : '/customer';
 
-    let permissionNames: string[] = [];
-    if (isStaff) {
-        try {
-            const perms: any = await query('SELECT p.name FROM permissions p JOIN role_permissions rp ON p.id = rp.permission_id WHERE rp.role_id = ?', [user.role_id]);
-            permissionNames = perms.map((p: any) => p.name);
-        } catch (e) {}
-    }
-
-    const sessionData = { id: user.id, name: user.name, email: user.email, role: roleName, permissions: permissionNames };
+    const sessionData = { id: user.id, name: user.name, email: user.email, role: roleName };
     const token = await encrypt(sessionData);
     
-    // THE FIX: Create the response first, then attach cookies directly to it
-    const response = NextResponse.json({ message: 'Success', redirectUrl: targetRoute });
-    
-    response.cookies.set('session', token, { 
+    const cookieStore = await cookies();
+    cookieStore.set('session', token, { 
         httpOnly: true, 
-        secure: true, 
+        secure: process.env.NODE_ENV === 'production', 
+        sameSite: 'lax',
         maxAge: 86400, 
         path: '/' 
     });
     
-    response.cookies.set('client_policy', JSON.stringify({ role: roleName, permissions: permissionNames }), { 
+    cookieStore.set('client_policy', JSON.stringify({ role: roleName }), { 
         httpOnly: false, 
         secure: false, 
+        sameSite: 'lax',
         maxAge: 86400, 
         path: '/' 
     });
 
-    return response;
+    return NextResponse.json({ message: 'Success', redirectUrl: targetRoute });
   } catch (error) {
     console.error('LOGIN ERROR:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
