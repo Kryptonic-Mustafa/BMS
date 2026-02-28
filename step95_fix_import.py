@@ -1,3 +1,7 @@
+import os
+
+files = {
+    "app/api/auth/login/route.ts": """
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import bcrypt from 'bcryptjs';
@@ -66,3 +70,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+"""
+}
+
+def apply_final_import_fix():
+    for path, content in files.items():
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content.strip())
+    print("✅ Fixed import path back to lib/auth!")
+
+if __name__ == "__main__":
+    apply_final_import_fix()
