@@ -1,3 +1,7 @@
+import os
+
+files = {
+    "app/api/admin/settings/route.ts": """
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { getSession } from '@/lib/session';
@@ -86,3 +90,15 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 });
   }
 }
+"""
+}
+
+def fix_schema_mismatch():
+    for path, content in files.items():
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content.strip())
+    print("✅ Settings API rewritten to match TiDB Columns!")
+
+if __name__ == "__main__":
+    fix_schema_mismatch()
