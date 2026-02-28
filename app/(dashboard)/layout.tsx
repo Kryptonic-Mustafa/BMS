@@ -30,9 +30,10 @@ export default async function DashboardLayout({
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-900" suppressHydrationWarning>
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden pl-64">
+      {/* THE FIX: Changed pl-64 to md:pl-64 and added mobile top padding */}
+      <div className="flex-1 flex flex-col overflow-hidden md:pl-64 pt-16 md:pt-0">
         <Navbar user={session} />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 dark:bg-slate-900 p-8">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 dark:bg-slate-900 p-4 md:p-8">
           {children}
         </main>
       </div>
