@@ -8,8 +8,8 @@ export async function GET() {
   try {
     const session = await getSession();
     
-    // Security Check: Must be Admin or have DashboardView permission
-    if (!session || (session.role !== 'admin' && !session.permissions?.includes('DashboardView'))) {
+    // Security Check
+    if (!session || (session.role !== 'admin' && session.role !== 'SuperAdmin' && !session.permissions?.includes('DashboardView'))) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -19,16 +19,16 @@ export async function GET() {
         WHERE role_id = (SELECT id FROM roles WHERE name = 'Customer' LIMIT 1)
     `);
     
-    // 2. Get Total Holdings (Sum of all balances)
+    // 2. Get Total Holdings
     const holdings: any = await query(`SELECT SUM(balance) as total FROM accounts`);
     
     // 3. Get Total Transactions
     const tx: any = await query(`SELECT COUNT(*) as count FROM transactions`);
     
     // 4. Get Live Activity Logs
-    let logs = [];
+    // THE FIX: Added ': any' to prevent strict array type-checking conflicts
+    let logs: any = [];
     try {
-        // Fetches from the audit table populated by logActivity
         logs = await query(`SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 15`);
     } catch (e) {
         console.warn("Audit logs table might be missing or empty.", e);
